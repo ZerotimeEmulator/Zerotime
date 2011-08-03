@@ -3,8 +3,12 @@ import neko.net.Socket;
 import neko.net.ThreadServer;
 import haxe.io.Bytes;
 
+import db.CharacterDBO;
+
 class Main extends ThreadServer<Connection, Xml>
 {
+    public static var server : Main;
+
 	override function clientConnected(sock: Socket) : Connection {
 		var conn: Connection = new Connection(sock);
 
@@ -39,10 +43,8 @@ class Main extends ThreadServer<Connection, Xml>
 
 	public static function main()
 	{
-		var server:Main = new Main();
-
+		server = new Main();
 		server.run("127.0.0.1", 5190);
-
 	}
 }
 
