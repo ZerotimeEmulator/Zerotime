@@ -24,11 +24,15 @@ class LocationDBO extends Location, implements IDataBaseObject {
         for (row in rset) {
             for (field in Reflect.fields(row))
             {
-                Reflect.setField(this, field, Reflect.field(row, field));
-                Reflect.setField(_old_values, field, Reflect.field(row, field));
+                if (field == "m") {
+                    //TODO: bigland;
+                } else {
+                    Reflect.setField(this, field, Reflect.field(row, field));
+                    Reflect.setField(_old_values, field, Reflect.field(row, field));
+                }
             }
         }
-        //TODO: bigland, houses.
+        //TODO: houses.
         DBConnectionPool.instance.delConnection(cnx);
 		return;
 	}
@@ -88,6 +92,18 @@ class LocationDBO extends Location, implements IDataBaseObject {
 		var result: Xml = Xml.createElement("L");
 
 		for (field in Reflect.fields(_old_values)) {
+            if (field == bigland) {
+                var t = "";
+                var bl;
+                var fst = true;
+                for (bl in _old_values.bigland) {
+                    if (!fst) t += ",";
+                    t += bl.name+":"+bl.X+":"+bl.Y;
+                }
+                result.set("m", t);
+            } else if (field == "house") {
+                //TODO houses
+            }
 			result.set(field, Reflect.field(_old_values, field) + "");
 		}
 
