@@ -25,7 +25,14 @@ class LocationDBO extends Location, implements IDataBaseObject {
             for (field in Reflect.fields(row))
             {
                 if (field == "m") {
-                    //TODO: bigland;
+                    vat t : String = row.m;
+                    tt = t.split(",");
+                    var bl;
+                    for (bl in tt) {
+                        var bbl = bl.split(":");
+                         this.bigland.push({ name : bbl[0], X : bbl[1], Y : bbl[2] });
+                         _old_values.bigland.push({ name : bbl[0], X : bbl[1], Y : bbl[2] });
+                    }
                 } else {
                     Reflect.setField(this, field, Reflect.field(row, field));
                     Reflect.setField(_old_values, field, Reflect.field(row, field));
