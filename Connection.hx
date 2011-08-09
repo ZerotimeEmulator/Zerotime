@@ -1,5 +1,7 @@
 import neko.net.Socket;
 
+import SessionManager;
+
 class Connection
 {
 	private var key: String;
@@ -20,36 +22,48 @@ class Connection
 		sock.write(xml.toString() + String.fromCharCode(0));
 	}
 
-	dynamic public function onGetXml(xml: Xml) {
+	dynamic public function onGetXml(xml: Xml) : Void {
         xml = xml.firstElement();
         var login: String = xml.get("l");
         var pc : CharacterSession;
         
-        if (xml.nodeName != "LOGIN") {
-            send(Xml.createElement("SERROR"));
-            throw "Unexpected xml";
-        } else if ((pc = SessionManager.instance.getPlayerCharacter(login, xml.get("p"), key)) == null) {
-            var xml: Xml;
+        switch (xml.nodeName) {
+            case "LOGIN":
+                var sxml : Xml;
+                try {
+                    pc = SessionManager.instance.getPlayerCharacter(login, xml.get("p"), key);
+                } catch (e : AuthError) {
+                    sxml = Xml.createElement("ERROR");
+                    sxml.set("code", switch (e) {
+                                        case BadLogin: "1";
+                                        case BadPassword: "2";
+                                        case AlreadyIn: "3";
+                                        case Blocked(txt): { sxml.set("txt", txt); "4"; }
+                                        case OldVersion: "5";
+                                        case NoElectronKey: "6";
+                                        case BadElectronKey: "7";
+                                        case SecondWindow: "8";
+                                        case ServerDown: "9";
+                                        case ServerBusy: "10"; });
+                    send(sxml);
+                    return;
+                }
+                pc.connection = this;
+                sxml = Xml.createElement("OK");
+                sxml.set("l", login);
+                sxml.set("ses", pc.getSesId());
+                send(sxml);
+            case "CHAT":
+            default: close(Xml.createElement("SERROR"));
+        } {
 
-            xml = Xml.createElement("ERROR");
-            xml.set("txt", "Ќесуществующее им€ персонажа или неверный пароль.");
-
-            send(xml);
-            throw "Authentication error";
-        } else {
-            var xml: Xml;
-
-            pc.connection = this;
-
-            xml = Xml.createElement("OK");
-            xml.set("l", login);
-            xml.set("ses", "10319674111165471995");
-
-            send(xml);
         }
     }
 
-    public function close() {
+    public function close(xml) {
+        try {
+            send(xml);
+        } catch (e : Dynamic) {}
         Main.server.stopClient(sock);
     }
 }

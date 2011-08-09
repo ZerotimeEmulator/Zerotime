@@ -1,3 +1,4 @@
+
 class SessionManager
 {
 	private static var singleton : SessionManager = null;
@@ -27,10 +28,24 @@ class SessionManager
             return characters.get(login);
         var char = new CharacterSession(login);
         //if (encrypt(char.psw, key) == encodePassword)
-        {
+        //{
             characters.set(login, char);
             return char;
-        }
+        //} else {
+        //    throw(BadPassword);
+        //}
 	}
 }
 
+enum AuthError {
+    BadLogin;
+    BadPassword;
+    AlreadyIn;
+    Blocked(txt : String);
+    OldVersion;
+    NoElectronKey;
+    BadElectronKey;
+    SecondWindow;
+    ServerDown;
+    ServerBusy;
+}
